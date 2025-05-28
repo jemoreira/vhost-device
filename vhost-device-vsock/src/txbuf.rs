@@ -2,7 +2,7 @@
 
 use std::{io::Write, num::Wrapping};
 
-use vm_memory::{bitmap::BitmapSlice, VolatileSlice};
+use vm_memory::{bitmap::BitmapSlice, Bytes, VolatileSlice};
 
 use crate::vhu_vsock::{Error, Result};
 
@@ -55,7 +55,9 @@ impl LocalTxBuf {
         // Check if there is more data to be wrapped around
         if len < data_buf.len() {
             let remain_txbuf = &mut self.buf[..(data_buf.len() - len)];
-            data_buf.copy_to(remain_txbuf);
+            data_buf
+                .read_slice(remain_txbuf, len)
+                .expect("shouldn't faile because remain_txbuf's len is data_buf.len() - len");
         }
 
         // Increment tail by the amount of data that has been added to the buffer
